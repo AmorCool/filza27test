@@ -1,6 +1,6 @@
 # Use the newest SDK bundled with this Theos installation.  ContainerManager
 # entry points are resolved at runtime, so private SDK headers are not needed.
-TARGET := iphone:clang:17.5:15.0
+TARGET := iphone:clang:latest:15.0
 ARCHS = arm64 arm64e
 
 include $(THEOS)/makefiles/common.mk
