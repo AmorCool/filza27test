@@ -14,6 +14,7 @@
 
 #include "MCMFilzaIntegration.h"
 #include "PosterBoardFeature.h"
+#include "UpdateChecker.h"
 
 #pragma mark - Root Helper Hooks
 
@@ -1603,4 +1604,5 @@ __attribute__((constructor)) void TweakInit(void) {
     // Populate the MCM root before Filza restores its initial browser path.
     runMCMPath();
     scheduleInitialBrowserRepair(8);
+    FSUpdateCheckerStart();
 }
