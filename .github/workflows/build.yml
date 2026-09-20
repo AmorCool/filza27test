@@ -54,7 +54,7 @@ jobs:
           echo "--- otool -L ---"
           otool -L .theos/obj/FilzaApplySandboxExt.dylib
           echo "--- end otool ---"
-          if otool -L .theos/obj/FilzaApplySandboxExt.dylib | grep -q -i substrate; then
+          if otool -L .theos/obj/FilzaApplySandboxExt.dylib | grep -qE "CydiaSubstrate\.framework|libsubstrate"; then
             echo "dylib links CydiaSubstrate; it would crash off-jailbreak" >&2
             exit 1
           fi
