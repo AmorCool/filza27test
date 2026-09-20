@@ -12,7 +12,7 @@
 #   * inject an LC_LOAD_DYLIB @executable_path/Frameworks/FilzaApplySandboxExt.dylib
 #     into Filza's main Mach-O (inside header slack; no segment relocation)
 #   * strip every signature so the sideload tool re-signs the whole app
-#   * rename the bundle to uk.nouvborne.filzaal
+#   * rename the bundle to com.apple.mobile.MobileHouseArrest (required on jailed devices)
 #   * inject Local Network + Bonjour declarations so the RPPairing host can
 #     advertise over Bonjour (iOS 14+ silently blocks it otherwise)
 #   * strip URL schemes, embed the AirliftIndex catalog + version tag
@@ -72,7 +72,11 @@ MAIN_BIN="$APP/$(plutil -extract CFBundleExecutable raw "$APP/Info.plist")"
 [[ -f "$MAIN_BIN" ]] || { echo "main binary not found: $MAIN_BIN" >&2; exit 65; }
 
 # --- Bundle identity ---
-plutil -replace CFBundleIdentifier -string "uk.nouvborne.filzaal" "$APP/Info.plist"
+# com.apple.mobile.MobileHouseArrest is the Apple-like identity required by
+# iOS's first-open integrity path on jailed devices (same as 0xjohnnydev/FilzaSlop).
+# Without it the signed app is rejected at launch with "Unable to install,
+# please try again later".
+plutil -replace CFBundleIdentifier -string "com.apple.mobile.MobileHouseArrest" "$APP/Info.plist"
 plutil -replace CFBundleDisplayName -string "Filza Airlift" "$APP/Info.plist" 2>/dev/null ||
   plutil -insert CFBundleDisplayName -string "Filza Airlift" "$APP/Info.plist"
 

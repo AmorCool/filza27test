@@ -1,4 +1,4 @@
-# Filza Airlift (uk.nouvborne.filzaal) — jailed, sideloadable Filza whose only
+# Filza Airlift (com.apple.mobile.MobileHouseArrest) — jailed, sideloadable Filza whose only
 # way outside the sandbox is the on-device AirTraffic transport (rust-core).
 # No MHA, no MCM, no kernel code.
 #
