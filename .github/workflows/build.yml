@@ -28,16 +28,20 @@ jobs:
 
       - name: Install Theos
         run: |
-          THEOS="$HOME/theos"
-          if [ ! -d "$THEOS" ]; then
-            git clone --depth=1 https://github.com/theos/theos.git "$THEOS"
-          fi
-          echo "THEOS=$THEOS" >> "$GITHUB_ENV"
+          git clone --depth=1 --recursive https://github.com/theos/theos.git "$HOME/theos"
+          echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
 
-      - name: Install theos dependencies
+      - name: Install iOS SDK for Theos
         run: |
-          "$HOME/theos/bin/install-theos-deps"
-          (cd "$HOME/theos" && bash bin/install-perl-deps --force)
+          mkdir -p "$HOME/theos/sdks"
+          curl -fL -o "$HOME/theos/sdks/iPhoneOS17.5.sdk.zip" \
+            https://github.com/xybp888/iOS-SDKs/releases/download/iOS17.5-SDKs/iPhoneOS17.5.sdk.zip
+          unzip -q -d "$HOME/theos/sdks" "$HOME/theos/sdks/iPhoneOS17.5.sdk.zip"
+          rm -f "$HOME/theos/sdks/iPhoneOS17.5.sdk.zip"
+          ls "$HOME/theos/sdks"
+
+      - name: Install host tools (ldid, dpkg-deb)
+        run: brew install ldid dpkg || true
 
       - name: Build tweak dylib
         run: make package FINALPACKAGE=1
