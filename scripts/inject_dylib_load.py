@@ -23,7 +23,7 @@ FAT_CIGAM = 0xBEBAFECA
 FAT_CIGAM_64 = 0xBFBAFECA
 
 LC_SEGMENT_64 = 0x19
-LC_LOAD_DYLIB = 0xD
+LC_LOAD_DYLIB = 0xC
 
 
 def align8(value: int) -> int:
