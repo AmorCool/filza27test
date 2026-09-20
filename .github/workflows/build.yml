@@ -60,7 +60,7 @@ jobs:
           fi
 
       - name: Validate Airlift catalog
-        run: plutil -lint Resources/AirliftIndex.json
+        run: python3 -c 'import json,sys; json.load(open(sys.argv[1]))' Resources/AirliftIndex.json
 
       - name: Prepare release version
         id: version
