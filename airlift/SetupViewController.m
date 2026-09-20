@@ -23,6 +23,7 @@ static UIStackView *ALMakeCard(void);
 #pragma mark - Panel (Setup form + Log)
 
 @interface AirliftPanelViewController : UIViewController <UIDocumentPickerDelegate>
+- (void)refreshDisplay;
 @end
 
 #pragma mark - Container
