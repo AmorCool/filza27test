@@ -7,3 +7,4 @@ MCMIdentifiers.plist
 *.ipa
 *.ips
 *.log
+rust-core/target/

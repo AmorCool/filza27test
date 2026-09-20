@@ -1,0 +1,58 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build (Rust core + Theos dylib + release IPA)
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select latest Xcode
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)/Contents/Developer"
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios
+
+      - name: Build Airlift rust core (aarch64-apple-ios)
+        run: bash scripts/build_rust_core.sh
+
+      - name: Install Theos
+        run: |
+          THEOS="$HOME/theos"
+          if [ ! -d "$THEOS" ]; then
+            git clone --depth=1 https://github.com/theos/theos.git "$THEOS"
+          fi
+          echo "THEOS=$THEOS" >> "$GITHUB_ENV"
+
+      - name: Install theos dependencies
+        run: |
+          "$HOME/theos/bin/install-theos-deps"
+          (cd "$HOME/theos" && bash bin/install-perl-deps --force)
+
+      - name: Build tweak dylib
+        run: make package FINALPACKAGE=1
+
+      - name: Verify dylib
+        run: |
+          test -f .theos/obj/FilzaApplySandboxExt.dylib
+          lipo -info .theos/obj/FilzaApplySandboxExt.dylib
+          ls -lh .theos/obj/FilzaApplySandboxExt.dylib
+
+      - name: Validate Airlift catalog
+        run: plutil -lint Resources/AirliftIndex.json
+
+      - name: Upload dylib artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FilzaApplySandboxExt-dylib
+          path: .theos/obj/FilzaApplySandboxExt.dylib
