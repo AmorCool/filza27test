@@ -8,3 +8,7 @@ MCMIdentifiers.plist
 *.ips
 *.log
 rust-core/target/
+
+# py
+__pycache__/
+*.pyc
