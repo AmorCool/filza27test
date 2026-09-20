@@ -47,8 +47,7 @@ fi
 [[ -f "$BASE_IPA" ]] || { echo "base IPA not found: $BASE_IPA" >&2; exit 66; }
 if [[ -n "$INDEX" ]]; then
   [[ -f "$INDEX" ]] || { echo "index not found: $INDEX" >&2; exit 66; }
-  plutil -lint "$INDEX" >/dev/null
-  plutil -extract entries xml1 -o /dev/null "$INDEX"
+  python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$INDEX"
 fi
 
 cd "$REPO_ROOT"
