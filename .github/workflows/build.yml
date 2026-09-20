@@ -47,12 +47,47 @@ jobs:
           test -f .theos/obj/FilzaApplySandboxExt.dylib
           lipo -info .theos/obj/FilzaApplySandboxExt.dylib
           ls -lh .theos/obj/FilzaApplySandboxExt.dylib
+          if otool -L .theos/obj/FilzaApplySandboxExt.dylib | grep -q -i substrate; then
+            echo "dylib links CydiaSubstrate; it would crash off-jailbreak" >&2
+            exit 1
+          fi
 
       - name: Validate Airlift catalog
         run: plutil -lint Resources/AirliftIndex.json
+
+      - name: Prepare release version
+        id: version
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=ci-${GITHUB_SHA:0:8}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download Filza base IPA
+        run: |
+          curl -fL --retry 5 --retry-delay 2 -o /tmp/Filza-4.0.0.ipa \
+            "https://github.com/Neoncat-OG/TrollStore-IPAs/releases/download/Filza/Filza-4.0.0.ipa"
+          echo "5829e97bc5b5dd8a7c3a5f960dd8a2e99aea522b2b9461a6a1b518ec752c8b9d  /tmp/Filza-4.0.0.ipa" | shasum -a 256 -c -
+          ls -lh /tmp/Filza-4.0.0.ipa
+
+      - name: Build release IPA (auto-inject dylib)
+        run: |
+          FILZAAL_VERSION=${{ steps.version.outputs.version }} \
+          zsh scripts/build_release_ipa.sh \
+            /tmp/Filza-4.0.0.ipa \
+            /tmp/FilzaAirlift.ipa \
+            Resources/AirliftIndex.json
 
       - name: Upload dylib artifact
         uses: actions/upload-artifact@v4
         with:
           name: FilzaApplySandboxExt-dylib
           path: .theos/obj/FilzaApplySandboxExt.dylib
+
+      - name: Upload release IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FilzaAirlift-ipa
+          path: /tmp/FilzaAirlift.ipa
+          if-no-files-found: error

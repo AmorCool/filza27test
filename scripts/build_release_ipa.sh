@@ -1,12 +1,17 @@
 #!/bin/zsh
 # build_release_ipa.sh — package a release Filza Airlift .ipa.
 #
-#   usage: $0 <base-unsigned.ipa> <output.ipa> [AirliftIndex.json]
+#   usage: $0 <base.ipa> <output.ipa> [AirliftIndex.json]
 #
-# The base must be an UNSIGNED Filza.app IPA (about to be re-signed by the
-# sideload tool). We:
-#   * build the tweak dylib + Rust airlift core
-#   * drop the dylib into Frameworks/ (loaded by the Filza shell)
+# The base is a decrypted (TrollStore-style) Filza IPA. It may be ad-hoc
+# signed. We:
+#   * rebuild the tweak dylib + Rust airlift core
+#   * repair the base archive (some mirrors append a decoy EOCD that breaks
+#     unzip, but leaves the real central directory intact)
+#   * drop the dylib into Frameworks/
+#   * inject an LC_LOAD_DYLIB @executable_path/Frameworks/FilzaApplySandboxExt.dylib
+#     into Filza's main Mach-O (inside header slack; no segment relocation)
+#   * strip every signature so the sideload tool re-signs the whole app
 #   * rename the bundle to uk.nouvborne.filzaal
 #   * inject Local Network + Bonjour declarations so the RPPairing host can
 #     advertise over Bonjour (iOS 14+ silently blocks it otherwise)
@@ -14,7 +19,7 @@
 set -euo pipefail
 
 if (( $# < 2 || $# > 3 )); then
-  echo "usage: $0 <base-unsigned.ipa> <output.ipa> [AirliftIndex.json]" >&2
+  echo "usage: $0 <base.ipa> <output.ipa> [AirliftIndex.json]" >&2
   exit 64
 fi
 
@@ -55,15 +60,17 @@ DYLIB="$REPO_ROOT/.theos/obj/FilzaApplySandboxExt.dylib"
 
 STAGE_ROOT="$(mktemp -d /tmp/FilzaAl-release.XXXXXX)"
 trap 'rm -rf "$STAGE_ROOT"' EXIT
-unzip -q "$BASE_IPA" -d "$STAGE_ROOT/stage"
+
+# Some TrollStore mirrors append a decoy EOCD so stock unzip fails; recover the
+# real central directory first.
+python3 "$REPO_ROOT/scripts/repair_ipa_zip.py" "$BASE_IPA" "$STAGE_ROOT/base.ipa"
+unzip -q "$STAGE_ROOT/base.ipa" -d "$STAGE_ROOT/stage"
 
 APP="$(find "$STAGE_ROOT/stage/Payload" -maxdepth 1 -type d -name '*.app' -print -quit)"
 [[ -n "$APP" ]] || { echo "Payload app not found" >&2; exit 65; }
 
-if codesign -d "$APP" >/dev/null 2>&1; then
-  echo "base app is signed; use an unsigned base IPA" >&2
-  exit 65
-fi
+MAIN_BIN="$APP/$(plutil -extract CFBundleExecutable raw "$APP/Info.plist")"
+[[ -f "$MAIN_BIN" ]] || { echo "main binary not found: $MAIN_BIN" >&2; exit 65; }
 
 # --- Bundle identity ---
 plutil -replace CFBundleIdentifier -string "uk.nouvborne.filzaal" "$APP/Info.plist"
@@ -82,6 +89,19 @@ plutil -insert NSBonjourServices -json \
 mkdir -p "$APP/Frameworks"
 cp "$DYLIB" "$APP/Frameworks/FilzaApplySandboxExt.dylib"
 codesign --remove-signature "$APP/Frameworks/FilzaApplySandboxExt.dylib"
+
+# --- Strip all signatures, then inject the load command ---
+codesign --remove-signature "$APP"
+find "$APP/Frameworks" -type f -name '*.dylib' -exec codesign --remove-signature {} \; 2>/dev/null || true
+python3 "$REPO_ROOT/scripts/inject_dylib_load.py" \
+  "$MAIN_BIN" "@executable_path/Frameworks/FilzaApplySandboxExt.dylib"
+
+# Everything must ship unsigned: the sideload tool performs the final signing,
+# so the injected load command survives it.
+if codesign -d "$MAIN_BIN" >/dev/null 2>&1; then
+  echo "main binary still carries a signature; expected an unsigned IPA" >&2
+  exit 65
+fi
 
 # --- Strip URL schemes (filza://, Dropbox, Box SDK) — detectable via canOpenURL ---
 plutil -remove CFBundleURLTypes "$APP/Info.plist" 2>/dev/null || true

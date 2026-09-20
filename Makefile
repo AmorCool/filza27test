@@ -11,6 +11,10 @@ include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = FilzaApplySandboxExt
 
+# The dylib is pulled in via LC_LOAD_DYLIB on an (un)signed sideload, never via
+# Substrate: linking CydiaSubstrate would make the app unbootable off-jailbreak.
+FilzaApplySandboxExt_USE_SUBSTRATE = 0
+
 FilzaApplySandboxExt_FILES = Tweak.m \
 	airlift/AirliftBridge.m \
 	airlift/SetupViewController.m \
