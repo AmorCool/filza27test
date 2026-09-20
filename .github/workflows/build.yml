@@ -51,6 +51,9 @@ jobs:
           test -f .theos/obj/FilzaApplySandboxExt.dylib
           lipo -info .theos/obj/FilzaApplySandboxExt.dylib
           ls -lh .theos/obj/FilzaApplySandboxExt.dylib
+          echo "--- otool -L ---"
+          otool -L .theos/obj/FilzaApplySandboxExt.dylib
+          echo "--- end otool ---"
           if otool -L .theos/obj/FilzaApplySandboxExt.dylib | grep -q -i substrate; then
             echo "dylib links CydiaSubstrate; it would crash off-jailbreak" >&2
             exit 1
