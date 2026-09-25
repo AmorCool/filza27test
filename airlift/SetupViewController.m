@@ -49,7 +49,7 @@ static UIStackView *ALMakeCard(void);
                              target:self action:@selector(dismissSelf)];
     self.navigationItem.leftBarButtonItem = done;
 
-    _segments = [[UISegmentedControl alloc] initWithItems:@[ @"Setup", @"Browse", @"Log" ]];
+    _segments = [[UISegmentedControl alloc] initWithItems:@[ @"设置", @"浏览", @"日志" ]];
     _segments.selectedSegmentIndex = 0;
     [_segments addTarget:self action:@selector(segmentChanged)
         forControlEvents:UIControlEventValueChanged];
@@ -91,7 +91,7 @@ static UIStackView *ALMakeCard(void);
     switch (_segments.selectedSegmentIndex) {
         case 1: {
             AirliftBrowseViewController *browse = [AirliftBrowseViewController new];
-            browse.title = @"Browse";
+            browse.title = @"浏览";
             [self swapTo:browse];
             break;
         }
@@ -202,7 +202,7 @@ static UIStackView *ALMakeCard(void);
     [stack addArrangedSubview:[self buildVPNCard]];
     [stack addArrangedSubview:[self buildPairingCard]];
     [stack addArrangedSubview:[self buildTransportCard]];
-    [stack addArrangedSubview:ALMakeSectionTitle(@"Log")];
+    [stack addArrangedSubview:ALMakeSectionTitle(@"日志")];
 
     _logView = [[UITextView alloc] init];
     _logView.editable = NO;
@@ -210,7 +210,7 @@ static UIStackView *ALMakeCard(void);
     _logView.backgroundColor = UIColor.secondarySystemBackgroundColor;
     _logView.textContainerInset = UIEdgeInsetsMake(8, 8, 8, 8);
     _logView.layer.cornerRadius = 8;
-    _logView.text = @"Pair, confirm the loopback VPN is up, then read/write anything.\n";
+    _logView.text = @"先配对，确认回环 VPN 已连接，然后即可任意读写。\n";
     _logView.translatesAutoresizingMaskIntoConstraints = NO;
     [stack addArrangedSubview:_logView];
     [NSLayoutConstraint activateConstraints:@[
@@ -222,7 +222,7 @@ static UIStackView *ALMakeCard(void);
 
 - (UIView *)buildVPNCard {
     UIStackView *card = ALMakeCard();
-    [card addArrangedSubview:ALMakeSectionTitle(@"LocalDevVPN Loopback")];
+    [card addArrangedSubview:ALMakeSectionTitle(@"LocalDevVPN 回环")];
 
     _vpnLabel = [UILabel new];
     _vpnLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightSemibold];
@@ -233,10 +233,10 @@ static UIStackView *ALMakeCard(void);
     _networkDetailLabel.textColor = UIColor.secondaryLabelColor;
     _networkDetailLabel.numberOfLines = 0;
 
-    UIButton *refresh = ALMakeButton(@"Refresh status", UIColor.systemBlueColor);
+    UIButton *refresh = ALMakeButton(@"刷新状态", UIColor.systemBlueColor);
     [refresh addTarget:self action:@selector(refreshVPN) forControlEvents:UIControlEventTouchUpInside];
 
-    UIButton *netPerm = ALMakeButton(@"Request Local Network access", UIColor.systemBlueColor);
+    UIButton *netPerm = ALMakeButton(@"请求本地网络权限", UIColor.systemBlueColor);
     [netPerm addTarget:self action:@selector(requestLocalNetwork)
        forControlEvents:UIControlEventTouchUpInside];
 
@@ -249,7 +249,7 @@ static UIStackView *ALMakeCard(void);
 
 - (UIView *)buildPairingCard {
     UIStackView *card = ALMakeCard();
-    [card addArrangedSubview:ALMakeSectionTitle(@"Built-in Pairing (RPPairing)")];
+    [card addArrangedSubview:ALMakeSectionTitle(@"内置配对（RPPairing）")];
 
     _pairingLabel = [UILabel new];
     _pairingLabel.font = [UIFont systemFontOfSize:14];
@@ -270,11 +270,11 @@ static UIStackView *ALMakeCard(void);
     actions.spacing = 10;
     actions.distribution = UIStackViewDistributionFillEqually;
 
-    _startPairingButton = ALMakeButton(@"Start Pairing", UIColor.systemGreenColor);
+    _startPairingButton = ALMakeButton(@"开始配对", UIColor.systemGreenColor);
     [_startPairingButton addTarget:self action:@selector(startPairing)
                   forControlEvents:UIControlEventTouchUpInside];
 
-    _stopPairingButton = ALMakeButton(@"Stop", UIColor.systemRedColor);
+    _stopPairingButton = ALMakeButton(@"停止", UIColor.systemRedColor);
     [_stopPairingButton addTarget:self action:@selector(stopPairing)
                  forControlEvents:UIControlEventTouchUpInside];
     _stopPairingButton.enabled = NO;
@@ -282,7 +282,7 @@ static UIStackView *ALMakeCard(void);
     [actions addArrangedSubview:_startPairingButton];
     [actions addArrangedSubview:_stopPairingButton];
 
-    UIButton *importButton = ALMakeButton(@"Import pairing file…", UIColor.systemBlueColor);
+    UIButton *importButton = ALMakeButton(@"导入配对文件…", UIColor.systemBlueColor);
     [importButton addTarget:self action:@selector(importPairingFile)
            forControlEvents:UIControlEventTouchUpInside];
 
@@ -292,7 +292,7 @@ static UIStackView *ALMakeCard(void);
     pathRow.axis = UILayoutConstraintAxisHorizontal;
     pathRow.spacing = 8;
     pathRow.alignment = UIStackViewAlignmentCenter;
-    UIButton *usePath = ALMakeButton(@"Use path", UIColor.systemIndigoColor);
+    UIButton *usePath = ALMakeButton(@"使用该路径", UIColor.systemIndigoColor);
     [usePath addTarget:self action:@selector(usePairingPath)
       forControlEvents:UIControlEventTouchUpInside];
     [pathRow addArrangedSubview:_pairingPathField];
@@ -303,8 +303,8 @@ static UIStackView *ALMakeCard(void);
     pairHint.font = [UIFont systemFontOfSize:12];
     pairHint.textColor = UIColor.secondaryLabelColor;
     pairHint.numberOfLines = 0;
-    pairHint.text = @"No pairing? Drop an existing pairing plist into Filza Airlift/"
-                    @"Documents (or airlift_pairing.plist), or start a fresh pair.";
+    pairHint.text = @"没有配对文件？把已有的 pairing plist 放进 Filza Airlift/"
+                    @"Documents（或命名为 airlift_pairing.plist），也可以直接发起一次新配对。";
 
     [card addArrangedSubview:_pairingLabel];
     [card addArrangedSubview:_pinLabel];
@@ -318,40 +318,40 @@ static UIStackView *ALMakeCard(void);
 
 - (UIView *)buildTransportCard {
     UIStackView *card = ALMakeCard();
-    [card addArrangedSubview:ALMakeSectionTitle(@"Transport (read / write / delete)")];
+    [card addArrangedSubview:ALMakeSectionTitle(@"传输（读取 / 写入 / 删除）")];
 
     _targetField = [self textFieldWithText:@"/var/mobile/Library/SpringBoard"
-                                 placeholder:@"canary target dir"];
-    UIButton *canary = ALMakeButton(@"Test canary write (verify escape)", UIColor.systemBlueColor);
+                                 placeholder:@"金丝雀写入目标目录"];
+    UIButton *canary = ALMakeButton(@"测试金丝雀写入（验证沙箱逃逸）", UIColor.systemBlueColor);
     [canary addTarget:self action:@selector(runCanary) forControlEvents:UIControlEventTouchUpInside];
 
     _readDirField = [self textFieldWithText:@"/var/mobile/Library/SpringBoard"
-                                 placeholder:@"read: target dir"];
+                                 placeholder:@"读取：目标目录"];
     _readLeafField = [self textFieldWithText:@"IconState.plist"
-                                 placeholder:@"read: file name"];
-    UIButton *read = ALMakeButton(@"Pull file → Imp/ (extract + restore)", UIColor.systemGreenColor);
+                                 placeholder:@"读取：文件名"];
+    UIButton *read = ALMakeButton(@"拉取文件 → Imports/（提取并还原）", UIColor.systemGreenColor);
     [read addTarget:self action:@selector(runRead) forControlEvents:UIControlEventTouchUpInside];
 
     _deleteDirField = [self textFieldWithText:@"/var/mobile/Library/SpringBoard"
-                                   placeholder:@"delete: target dir"];
+                                   placeholder:@"删除：目标目录"];
     _deleteLeafField = [self textFieldWithText:@"airlift_canary.cards"
-                                   placeholder:@"delete: file name"];
-    UIButton *del = ALMakeButton(@"Delete file on device", UIColor.systemRedColor);
+                                   placeholder:@"删除：文件名"];
+    UIButton *del = ALMakeButton(@"删除设备上的文件", UIColor.systemRedColor);
     [del addTarget:self action:@selector(runDelete) forControlEvents:UIControlEventTouchUpInside];
 
     _pushTargetField = [self textFieldWithText:@"/var/mobile/Library/Caches"
-                                    placeholder:@"push target dir"];
-    UIButton *push = ALMakeButton(@"Push Staging folder → target", UIColor.systemPurpleColor);
+                                    placeholder:@"推送目标目录"];
+    UIButton *push = ALMakeButton(@"推送 Staging 文件夹 → 目标目录", UIColor.systemPurpleColor);
     [push addTarget:self action:@selector(runPush) forControlEvents:UIControlEventTouchUpInside];
 
     UILabel *hint = [UILabel new];
     hint.font = [UIFont systemFontOfSize:12];
     hint.textColor = UIColor.secondaryLabelColor;
     hint.numberOfLines = 0;
-    hint.text = @"Reading pulls the file into Airlift/Imports and restores it on "
-                @"the device (extract semantics). Writing injects Cairo folders "
-                @"from Airlift/Staging via com.apple.atc. No directory listing is "
-                @"possible — use Browse ▸ Index for known paths.";
+    hint.text = @"读取会把文件拉进 Airlift/Imports，并在设备上还原（提取语义）。"
+                @"写入则通过 com.apple.atc 把 Airlift/Staging 里的 Cairo "
+                @"文件夹注入设备。该通道无法列目录 — "
+                @"请用「浏览 ▸ 索引」查看已知路径。";
 
     [card addArrangedSubview:_targetField];
     [card addArrangedSubview:canary];
@@ -384,13 +384,13 @@ static UIStackView *ALMakeCard(void);
     [_bridge refreshVPNStatus];
     [_bridge refreshPairingFile];
     [self refreshDisplay];
-    [self appendLogLine:@"Refreshed LocalDevVPN status."];
+    [self appendLogLine:@"已刷新 LocalDevVPN 状态。"];
 }
 
 - (void)requestLocalNetwork {
     [_bridge requestLocalNetworkAccess];
     [self refreshDisplay];
-    [self appendLogLine:@"Requested Local Network access — allow the prompt, then pair."];
+    [self appendLogLine:@"已请求本地网络权限 — 请在弹窗中允许，然后再配对。"];
 }
 
 - (void)importPairingFile {
@@ -405,15 +405,15 @@ static UIStackView *ALMakeCard(void);
     NSString *path = [_pairingPathField.text
         stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
     if (!path.length) {
-        [self appendLogLine:@"Enter a pairing file path first."];
+        [self appendLogLine:@"请先输入配对文件路径。"];
         return;
     }
     NSError *error = NULL;
     if ([_bridge importPairingFileAtPath:path errorOut:&error]) {
-        [self appendLogLine:[NSString stringWithFormat:@"Imported pairing file from %@", path]];
+        [self appendLogLine:[NSString stringWithFormat:@"已从 %@ 导入配对文件", path]];
     } else {
-        [self appendLogLine:[NSString stringWithFormat:@"Import failed: %@",
-            error.localizedDescription ?: @"unknown error"]];
+        [self appendLogLine:[NSString stringWithFormat:@"导入失败：%@",
+            error.localizedDescription ?: @"未知错误"]];
     }
     [self refreshDisplay];
 }
@@ -427,10 +427,10 @@ static UIStackView *ALMakeCard(void);
     BOOL ok = [_bridge importPairingFileAtPath:url.path errorOut:&error];
     if (scoped) [url stopAccessingSecurityScopedResource];
     if (ok) {
-        [self appendLogLine:[NSString stringWithFormat:@"Imported pairing file from %@", url.path]];
+        [self appendLogLine:[NSString stringWithFormat:@"已从 %@ 导入配对文件", url.path]];
     } else {
-        [self appendLogLine:[NSString stringWithFormat:@"Import failed: %@",
-            error.localizedDescription ?: @"unknown error"]];
+        [self appendLogLine:[NSString stringWithFormat:@"导入失败：%@",
+            error.localizedDescription ?: @"未知错误"]];
     }
     [self refreshDisplay];
 }
@@ -447,16 +447,16 @@ static UIStackView *ALMakeCard(void);
 
 - (void)runCanary {
     NSString *target = _targetField.text.length ? _targetField.text : nil;
-    [self appendLogLine:@"— canary write requested —"];
+    [self appendLogLine:@"— 已请求金丝雀写入 —"];
     [_bridge canaryWriteAtTarget:target completion:^(NSInteger rc, NSDictionary *json, NSString *error) {
-        [self appendLogLine:[NSString stringWithFormat:@"canary rc=%ld", (long)rc]];
+        [self appendLogLine:[NSString stringWithFormat:@"金丝雀 返回码=%ld", (long)rc]];
         if (error.length) [self appendLogLine:error];
         if (json[@"target"]) {
-            [self appendLogLine:[NSString stringWithFormat:@"target=%ld files",
+            [self appendLogLine:[NSString stringWithFormat:@"目标=%ld 个文件",
                 ((NSNumber *)json[@"target"]).longValue]];
         }
         if (json[@"knownPaths"]) {
-            [self appendLogLine:[NSString stringWithFormat:@"written=%ld",
+            [self appendLogLine:[NSString stringWithFormat:@"已写入=%ld",
                 ((NSNumber *)json[@"knownPaths"]).longValue]];
         }
     }];
@@ -466,19 +466,19 @@ static UIStackView *ALMakeCard(void);
     NSString *dir = _readDirField.text ?: @"";
     NSString *leaf = _readLeafField.text ?: @"";
     if (!dir.length || !leaf.length) {
-        [self appendLogLine:@"Read needs a target dir and a file name."];
+        [self appendLogLine:@"读取需要同时填写目标目录和文件名。"];
         return;
     }
     NSString *outPath = [_bridge.airliftImportsPath stringByAppendingPathComponent:leaf];
-    [self appendLogLine:@"— read (extract + restore) requested —"];
+    [self appendLogLine:@"— 已请求读取（提取并还原）—"];
     [_bridge readFileAtDir:dir leaf:leaf toPath:outPath
                 completion:^(NSInteger rc, NSDictionary *json, NSString *error) {
-        [self appendLogLine:[NSString stringWithFormat:@"read rc=%ld", (long)rc]];
+        [self appendLogLine:[NSString stringWithFormat:@"读取 返回码=%ld", (long)rc]];
         if (error.length) [self appendLogLine:error];
         if (json[@"outputPath"]) {
-            [self appendLogLine:[NSString stringWithFormat:@"pulled → %@", json[@"outputPath"]]];
+            [self appendLogLine:[NSString stringWithFormat:@"已拉取 → %@", json[@"outputPath"]]];
         }
-        if ([json[@"restored"] boolValue]) [self appendLogLine:@"file restored on device ✔"];
+        if ([json[@"restored"] boolValue]) [self appendLogLine:@"文件已在设备上还原 ✔"];
     }];
 }
 
@@ -486,23 +486,23 @@ static UIStackView *ALMakeCard(void);
     NSString *dir = _deleteDirField.text ?: @"";
     NSString *leaf = _deleteLeafField.text ?: @"";
     if (!dir.length || !leaf.length) {
-        [self appendLogLine:@"Delete needs a target dir and a file name."];
+        [self appendLogLine:@"删除需要同时填写目标目录和文件名。"];
         return;
     }
-    [self appendLogLine:@"— delete requested —"];
+    [self appendLogLine:@"— 已请求删除 —"];
     [_bridge removeFileAtDir:dir leaf:leaf
                   completion:^(NSInteger rc, NSDictionary *json, NSString *error) {
-        [self appendLogLine:[NSString stringWithFormat:@"delete rc=%ld", (long)rc]];
+        [self appendLogLine:[NSString stringWithFormat:@"删除 返回码=%ld", (long)rc]];
         if (error.length) [self appendLogLine:error];
-        if ([json[@"removed"] boolValue]) [self appendLogLine:@"removed ✔"];
-        if ([json[@"targetAbsent"] boolValue]) [self appendLogLine:@"target was already absent"];
+        if ([json[@"removed"] boolValue]) [self appendLogLine:@"已删除 ✔"];
+        if ([json[@"targetAbsent"] boolValue]) [self appendLogLine:@"目标文件原本就不存在"];
     }];
 }
 
 - (void)runPush {
     NSString *target = _pushTargetField.text ?: @"";
     if (!target.length) {
-        [self appendLogLine:@"Enter a push target dir first."];
+        [self appendLogLine:@"请先输入推送目标目录。"];
         return;
     }
     NSArray *folders = [NSFileManager.defaultManager
@@ -516,12 +516,12 @@ static UIStackView *ALMakeCard(void);
         if (isDir) [names addObject:name];
     }
     if (!names.count) {
-        [self appendLogLine:@"No staging folders in Airlift/Staging. Put one there first."];
+        [self appendLogLine:@"Airlift/Staging 里没有可推送的文件夹，请先放入一个。"];
         return;
     }
     UIAlertController *alert = [UIAlertController
-        alertControllerWithTitle:@"Push to device"
-                         message:[NSString stringWithFormat:@"Pick a Staging folder to write into %@",
+        alertControllerWithTitle:@"推送到设备"
+                         message:[NSString stringWithFormat:@"选择一个 Staging 文件夹，写入 %@",
                              target]
                   preferredStyle:UIAlertControllerStyleActionSheet];
     for (NSString *name in names) {
@@ -531,7 +531,7 @@ static UIStackView *ALMakeCard(void);
                 [self pushFolder:src toTarget:target];
             }]];
     }
-    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil]];
     if (alert.popoverPresentationController) {
         alert.popoverPresentationController.sourceView = self.view;
     }
@@ -539,9 +539,9 @@ static UIStackView *ALMakeCard(void);
 }
 
 - (void)pushFolder:(NSString *)source toTarget:(NSString *)target {
-    [self appendLogLine:@"— folder push requested —"];
+    [self appendLogLine:@"— 已请求文件夹推送 —"];
     [_bridge writeDirectory:source toTarget:target completion:^(NSInteger rc, NSString *error) {
-        [self appendLogLine:[NSString stringWithFormat:@"push rc=%ld", (long)rc]];
+        [self appendLogLine:[NSString stringWithFormat:@"推送 返回码=%ld", (long)rc]];
         if (error.length) [self appendLogLine:error];
     }];
 }
@@ -550,36 +550,36 @@ static UIStackView *ALMakeCard(void);
 
 - (void)refreshDisplay {
     _vpnLabel.text = _bridge.vpnUp
-        ? @"● Loopback tunnel up"
-        : @"○ Loopback tunnel down";
+        ? @"● 回环隧道已连接"
+        : @"○ 回环隧道未连接";
     _vpnLabel.textColor = _bridge.vpnUp
         ? UIColor.systemGreenColor
         : UIColor.systemRedColor;
     _networkDetailLabel.text = _bridge.networkDetail.length
-        ? _bridge.networkDetail : @"No tunnel interfaces — start LocalDevVPN (10.7.0.1)";
+        ? _bridge.networkDetail : @"没有隧道接口 — 请启动 LocalDevVPN (10.7.0.1)";
 
     if (_bridge.isPairing) {
-        _pairingLabel.text = @"Pairing… open Settings › Privacy & Security › Developer Mode";
+        _pairingLabel.text = @"配对中…请打开 设置 › 隐私与安全性 › 开发者模式";
         _startPairingButton.enabled = NO;
         _stopPairingButton.enabled = YES;
     } else {
         _pairingLabel.text = _bridge.hasPairingFile
-            ? [NSString stringWithFormat:@"Paired ✅ device: %@",
-                _bridge.pairedDeviceName ?: @"unknown"]
-            : @"Not paired — start pairing or drop a pairing plist into Filza Airlift/Documents";
+            ? [NSString stringWithFormat:@"已配对 ✅ 设备：%@",
+                _bridge.pairedDeviceName ?: @"未知"]
+            : @"未配对 — 请开始配对，或将 pairing plist 放入 Filza Airlift/Documents";
         _startPairingButton.enabled = YES;
         _stopPairingButton.enabled = NO;
     }
 
     if (_bridge.pairingPIN.length) {
-        _pinLabel.text = [NSString stringWithFormat:@"Enter PIN %@", _bridge.pairingPIN];
+        _pinLabel.text = [NSString stringWithFormat:@"请输入 PIN 码 %@", _bridge.pairingPIN];
     } else {
         _pinLabel.text = @"";
     }
 
     _pairingFileLabel.text = [NSString stringWithFormat:@"%@ · %@",
         _bridge.pairingFilePath,
-        _bridge.hasPairingFile ? @"present" : @"missing"];
+        _bridge.hasPairingFile ? @"存在" : @"缺失"];
 }
 
 - (void)appendLogLine:(NSString *)line {

@@ -25,7 +25,7 @@ pub fn generate_grappa_token<F: Fn(&str)>(
         let sym_ptr = libc::dlsym(libc::RTLD_DEFAULT, sym_name.as_ptr() as _);
 
         if sym_ptr.is_null() {
-            log("airlift: grappa: ALGetGrappaToken symbol not found");
+            log("airlift: grappa: 未找到 ALGetGrappaToken 符号");
             return None;
         }
 
@@ -49,12 +49,12 @@ pub fn generate_grappa_token<F: Fn(&str)>(
 
         if rc != 0 || out_len == 0 {
             let err_str = CStr::from_ptr(err_buf.as_ptr()).to_string_lossy();
-            log(&format!("airlift: grappa: token generation failed (rc={rc}): {err_str}"));
+            log(&format!("airlift: grappa: 生成 token 失败（rc={rc}）：{err_str}"));
             return None;
         }
 
         buf.truncate(out_len);
-        log(&format!("airlift: grappa: successfully generated authentic Grappa token ({out_len} bytes) ✅"));
+        log(&format!("airlift: grappa: 已成功生成真正的 Grappa token（{out_len} 字节）✅"));
         Some(buf)
     }
 }

@@ -95,7 +95,7 @@ static void ALBridgePairPin(const char *pin, void *ctx);
         }
     }
     [self appendLog:[NSString stringWithFormat:
-        @"airlift: default layout ready under %@", root]];
+        @"airlift: 默认目录已就绪：%@", root]];
 }
 
 - (NSString *)airliftRootPath {
@@ -185,8 +185,8 @@ static void ALBridgePairPin(const char *pin, void *ctx);
         if ([self canConnectToHost:host port:kRsdPort]) {
             tunnelUp = YES;
             detail = [detail length]
-                ? [NSString stringWithFormat:@"%@ · %@:%u reachable", detail, host, kRsdPort]
-                : [NSString stringWithFormat:@"%@:%u reachable", host, kRsdPort];
+                ? [NSString stringWithFormat:@"%@ · %@:%u 可达", detail, host, kRsdPort]
+                : [NSString stringWithFormat:@"%@:%u 可达", host, kRsdPort];
             break;
         }
     }
@@ -215,7 +215,7 @@ static void ALBridgePairPin(const char *pin, void *ctx);
         NSString *found = [self adoptFirstPairingCandidate];
         if (found) {
             [self appendLog:[NSString stringWithFormat:
-                @"airlift: adopted pairing file from %@", found]];
+                @"airlift: 已自动采用配对文件：%@", found]];
             attrs = [NSFileManager.defaultManager attributesOfItemAtPath:path error:NULL];
             exists = (attrs != nil) && (((NSNumber *)attrs[NSFileSize]).longLongValue > 0);
         }
@@ -251,7 +251,7 @@ static void ALBridgePairPin(const char *pin, void *ctx);
 - (BOOL)importPairingFileAtPath:(NSString *)sourcePath errorOut:(NSError **)errorOut {
     if (!sourcePath.length) {
         if (errorOut) *errorOut = [NSError errorWithDomain:@"airlift" code:1
-                            userInfo:@{NSLocalizedDescriptionKey: @"No path given."}];
+                            userInfo:@{NSLocalizedDescriptionKey: @"未提供路径。"}];
         return NO;
     }
     NSFileManager *fm = NSFileManager.defaultManager;
@@ -259,7 +259,7 @@ static void ALBridgePairPin(const char *pin, void *ctx);
     if (!attrs) {
         if (errorOut) *errorOut = [NSError errorWithDomain:@"airlift" code:2
                             userInfo:@{NSLocalizedDescriptionKey:
-                                [NSString stringWithFormat:@"%@ not readable.", sourcePath]}];
+                                [NSString stringWithFormat:@"%@ 不可读。", sourcePath]}];
         return NO;
     }
     NSError *copyError = NULL;
@@ -269,17 +269,17 @@ static void ALBridgePairPin(const char *pin, void *ctx);
         NSData *data = [NSData dataWithContentsOfFile:sourcePath options:0 error:&copyError];
         if (!data || data.length == 0) {
             if (errorOut) *errorOut = copyError ?: [NSError errorWithDomain:@"airlift" code:3
-                                userInfo:@{NSLocalizedDescriptionKey: @"Import failed."}];
+                                userInfo:@{NSLocalizedDescriptionKey: @"导入失败。"}];
             return NO;
         }
         if (![data writeToFile:self.pairingFilePath atomically:YES]) {
             if (errorOut) *errorOut = [NSError errorWithDomain:@"airlift" code:4
-                                userInfo:@{NSLocalizedDescriptionKey: @"Write failed."}];
+                                userInfo:@{NSLocalizedDescriptionKey: @"写入失败。"}];
             return NO;
         }
     }
     [self appendLog:[NSString stringWithFormat:
-        @"airlift: imported pairing file %@ → %@", sourcePath, self.pairingFilePath]];
+        @"airlift: 已导入配对文件 %@ → %@", sourcePath, self.pairingFilePath]];
     return [self refreshPairingFile];
 }
 
@@ -293,7 +293,7 @@ static void ALBridgePairPin(const char *pin, void *ctx);
     NSNetService *probe = [[NSNetService alloc]
         initWithDomain:@"" type:probeType name:@"FilzaAirliftProbe" port:0];
     self.probeService = probe;
-    [self appendLog:@"airlift: requesting Local Network access (allow the prompt)…"];
+    [self appendLog:@"airlift: 正在请求本地网络权限（请在弹窗中允许）…"];
 
     // A short-lived throwaway advertisement triggers the iOS "Local Network"
     // authorization dialog, just like AirCard's NWListener probe. Without this
@@ -349,7 +349,7 @@ static void ALBridgePairPin(const char *pin, void *ctx);
 
 - (void)startPairing {
     if (self.isPairing) return;
-    [self appendLog:@"airlift: starting RPPairing host on 0.0.0.0…"];
+    [self appendLog:@"airlift: 正在 0.0.0.0 上启动 RPPairing 主机…"];
     self.isPairing = YES;
     self.pairingPIN = nil;
     self.pairedDeviceName = nil;
@@ -415,10 +415,10 @@ static void ALBridgePairPin(const char *pin, void *ctx);
         self.pairedDeviceName = device.length ? device : @"iPhone";
         [self refreshPairingFile];
         [self appendLog:[NSString stringWithFormat:
-            @"airlift: paired with %@ ✅", self.pairedDeviceName]];
+            @"airlift: 已与 %@ 配对 ✅", self.pairedDeviceName]];
     } else {
         [self appendLog:[NSString stringWithFormat:
-            @"airlift: pairing failed: %@", error.length ? error : @"(rc != 0)"]];
+            @"airlift: 配对失败：%@", error.length ? error : @"(返回码非 0)"]];
     }
     [NSNotificationCenter.defaultCenter
         postNotificationName:ALBridgePairingStateChangeNotification object:nil];
@@ -430,7 +430,7 @@ static void ALBridgePairPin(const char *pin, void *ctx);
         _pairingFinished = YES;
         self.isPairing = NO;
         self.pairingPIN = nil;
-        [self appendLog:@"airlift: pairing cancelled"];
+        [self appendLog:@"airlift: 配对已取消"];
         [NSNotificationCenter.defaultCenter
             postNotificationName:ALBridgePairingStateChangeNotification object:nil];
     }
@@ -456,7 +456,7 @@ static void ALBridgePairPin(const char *pin, void *ctx);
     [service publish];
     self.service = service;
     [self appendLog:
-        @"airlift: advertising — pair under Settings › Privacy & Security › Developer Mode"];
+        @"airlift: 正在广播 — 请在 设置 › 隐私与安全性 › 开发者模式 中完成配对"];
 }
 
 - (void)stopAdvertising {
@@ -475,7 +475,7 @@ static void ALBridgePairPin(const char *pin, void *ctx);
                                            NSString *_Nullable error))completion {
     NSString *path = self.pairingFilePath;
     if (!self.hasPairingFile) {
-        if (completion) completion(-1, nil, @"No pairing file. Pair this iPhone first.");
+        if (completion) completion(-1, nil, @"没有配对文件。请先与本机 iPhone 完成配对。");
         return -1;
     }
     NSString *tgt = target.length ? target : kDefaultTarget;
@@ -507,11 +507,11 @@ static void ALBridgePairPin(const char *pin, void *ctx);
                  completion:(void (^)(NSInteger rc, NSString *_Nullable error))completion {
     NSString *path = self.pairingFilePath;
     if (!self.hasPairingFile) {
-        if (completion) completion(-1, @"No pairing file. Pair this iPhone first.");
+        if (completion) completion(-1, @"没有配对文件。请先与本机 iPhone 完成配对。");
         return -1;
     }
     if (!sourceDir.length || !targetDir.length) {
-        if (completion) completion(-1, @"Both source and target must be set.");
+        if (completion) completion(-1, @"必须同时设置源目录和目标目录。");
         return -1;
     }
     AirliftBridge *bridge = self;
@@ -538,11 +538,11 @@ static void ALBridgePairPin(const char *pin, void *ctx);
                                      NSString *_Nullable error))completion {
     NSString *path = [self _pairingGuard];
     if (!path) {
-        if (completion) completion(-1, nil, @"No pairing file. Pair this iPhone first.");
+        if (completion) completion(-1, nil, @"没有配对文件。请先与本机 iPhone 完成配对。");
         return -1;
     }
     if (!dir.length || !leaf.length || !outPath.length) {
-        if (completion) completion(-1, nil, @"dir, leaf and output path must all be set.");
+        if (completion) completion(-1, nil, @"必须同时设置目录、文件名和输出路径。");
         return -1;
     }
     AirliftBridge *bridge = self;
@@ -575,11 +575,11 @@ static void ALBridgePairPin(const char *pin, void *ctx);
                                        NSString *_Nullable error))completion {
     NSString *path = [self _pairingGuard];
     if (!path) {
-        if (completion) completion(-1, nil, @"No pairing file. Pair this iPhone first.");
+        if (completion) completion(-1, nil, @"没有配对文件。请先与本机 iPhone 完成配对。");
         return -1;
     }
     if (!dir.length || !leaf.length) {
-        if (completion) completion(-1, nil, @"dir and leaf must be set.");
+        if (completion) completion(-1, nil, @"必须同时设置目录和文件名。");
         return -1;
     }
     AirliftBridge *bridge = self;

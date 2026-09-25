@@ -19,7 +19,7 @@ pub fn opt_str(p: *const c_char, default: &str) -> String {
 pub fn cstr(s: impl std::fmt::Display) -> *mut c_char {
     let s = format!("{s}");
     CString::new(s)
-        .unwrap_or_else(|_| CString::new("(null bytes in string)").unwrap())
+        .unwrap_or_else(|_| CString::new("（字符串中含空字节）").unwrap())
         .into_raw()
 }
 

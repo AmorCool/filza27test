@@ -121,25 +121,25 @@ async fn async_run_host(
     saved_alt_irk: Option<[u8; 16]>,
     cbs: Cbs,
 ) -> Result<(String, String, String, String, String), String> {
-    tracing::info!("RPPairing: binding on {bind_addr}:{port}");
+    tracing::info!("RPPairing：正在绑定 {bind_addr}:{port}");
     let ip: IpAddr = bind_addr.parse().unwrap_or(IpAddr::V4(Ipv4Addr::UNSPECIFIED));
     let listener = TcpListener::bind(SocketAddr::new(ip, port))
         .await
-        .map_err(|e| format!("failed to bind {bind_addr}:{port}: {e}"))?;
+        .map_err(|e| format!("绑定 {bind_addr}:{port} 失败：{e}"))?;
     let bound_port = listener
         .local_addr()
-        .map_err(|e| format!("no local addr: {e}"))?
+        .map_err(|e| format!("获取本地地址失败：{e}"))?
         .port();
-    tracing::info!("RPPairing: listening on port {bound_port}");
+    tracing::info!("RPPairing：正在监听端口 {bound_port}");
 
     let mut pairing_file = match RpPairingFile::read_from_file(&out_path).await {
         Ok(mut existing) => {
             existing.alt_irk = None;
-            tracing::info!("RPPairing: reusing host key pair from {out_path}");
+            tracing::info!("RPPairing：复用来自 {out_path} 的主机密钥对");
             existing
         }
         Err(_) => {
-            tracing::info!("RPPairing: generating new host key pair");
+            tracing::info!("RPPairing：正在生成新的主机密钥对");
             RpPairingFile::generate(&name)
         }
     };
@@ -147,7 +147,7 @@ async fn async_run_host(
     let mut host_info = PairableHostInfo::generate(&name, &model);
     if let Some(irk) = saved_alt_irk {
         host_info.alt_irk = irk;
-        tracing::info!("RPPairing: reusing stored altIRK");
+        tracing::info!("RPPairing：复用已保存的 altIRK");
     }
     let host_alt_irk = host_info.alt_irk;
     let service_id = pairing_file.identifier.clone();
@@ -155,12 +155,12 @@ async fn async_run_host(
     // Advertise: hand the Bonjour details to Swift via the ready callback.
     emit_ready(&cbs, &service_id, bound_port, &host_info);
 
-    tracing::info!("RPPairing: waiting for device on port {bound_port}…");
+    tracing::info!("RPPairing：正在端口 {bound_port} 上等待设备…");
     let (stream, peer_addr) = listener
         .accept()
         .await
-        .map_err(|e| format!("accept failed: {e}"))?;
-    tracing::info!("RPPairing: device connected from {peer_addr}");
+        .map_err(|e| format!("accept 失败：{e}"))?;
+    tracing::info!("RPPairing：设备已连接，来源 {peer_addr}");
 
     let socket = RpPairingSocket::new_device(stream);
     let mut host = PairableHost::new(socket, host_info);
@@ -174,7 +174,7 @@ async fn async_run_host(
             let pin_cb = pin_cb;
             let pin_ctx = pin_ctx;
             async move {
-                tracing::info!("RPPairing: PIN issued — {pin}");
+                tracing::info!("RPPairing：已下发 PIN 码 — {pin}");
                 if let Some(cb) = pin_cb {
                     if let Ok(c) = CString::new(pin.as_str()) {
                         cb(c.as_ptr(), pin_ctx);
@@ -183,16 +183,16 @@ async fn async_run_host(
             }
         })
         .await
-        .map_err(|e| format!("pairing failed: {e}"))?;
+        .map_err(|e| format!("配对失败：{e}"))?;
     tracing::info!(
-        "RPPairing: handshake complete — {} ({})",
+        "RPPairing：握手完成 — {} ({})",
         peer_info.name, peer_info.model
     );
 
     pairing_file
         .write_to_file(&out_path)
         .await
-        .map_err(|e| format!("failed to write pairing file: {e}"))?;
+        .map_err(|e| format!("写入配对文件失败：{e}"))?;
 
     let size = tokio::fs::metadata(&out_path)
         .await
@@ -200,10 +200,10 @@ async fn async_run_host(
         .unwrap_or(0);
     if size == 0 {
         return Err(format!(
-            "handshake completed but pairing file {out_path} is empty"
+            "握手已完成，但配对文件 {out_path} 为空"
         ));
     }
-    tracing::info!("RPPairing: pairing file written to {out_path} ({size} bytes)");
+    tracing::info!("RPPairing：配对文件已写入 {out_path}（{size} 字节）");
 
     Ok((
         peer_info.name,
